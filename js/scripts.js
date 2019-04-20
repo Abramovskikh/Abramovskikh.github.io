@@ -34,11 +34,21 @@ window.addEventListener("load", () => {
         let c = CANVAS.context;
         c.fillStyle = BG_C;
         c.fillRect(0, 0, innerWidth, innerHeight);
+        showPointer();
 
-        let x = TOOLS.locationTouch.x < 0 ? -innerWidth : TOOLS.locationTouch.x;
-        let y = TOOLS.locationTouch.y < 0 ? -innerHeight : TOOLS.locationTouch.y;
-        c.fillStyle = "brown";
-        c.fillRect(x - 50, y - 50, 100, 100);
+        c.beginPath();
+        c.moveTo(0,0);
+        c.lineTo(TOOLS.locationTouch.x, TOOLS.locationTouch.y);
+        c.closePath()
+        c.stroke();
+
+        c.fillStyle = "black";
+        c.font = "20px monospace";
+        c.textAlign = "left";
+        c.textBaseline = "top";
+        let mag = TOOLS.locationTouch.x < 0 || TOOLS.locationTouch.y < 0 ? "" : Magnitude(TOOLS.locationTouch.x, TOOLS.locationTouch.y).toFixed(1);
+        c.fillText(mag, TOOLS.locationTouch.x + 10, TOOLS.locationTouch.y + 10);
+
     };
 
     const update = function(time = 0) {
@@ -57,7 +67,23 @@ window.addEventListener("load", () => {
     }
     function tEnd(e) {
         e.preventDefault();
+        TOOLS.setTouchPosition(-innerWidth, -innerHeight);
     }
+
+    function showPointer(point) {
+        let c = CANVAS.context;
+        let x = TOOLS.locationTouch.x < 0 ? -innerWidth : TOOLS.locationTouch.x;
+        let y = TOOLS.locationTouch.y < 0 ? -innerHeight : TOOLS.locationTouch.y;
+        c.strokeStyle = "brown";
+        c.beginPath()
+        c.arc(x, y, 10, 0, Math.PI * 2, false);
+        c.closePath();
+        c.stroke();
+    }
+
+    function Magnitude(x, y) {
+        return Math.sqrt(x * x + y * y);
+    };
 
     update();
 });
