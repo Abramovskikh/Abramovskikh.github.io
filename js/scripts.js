@@ -1,16 +1,38 @@
 const CANVAS = {
-    W: null,
-    H: null,
     canvas: null,
-    setCanvas: (width, height) => {
+    context: null,
+    set: (width, height) => {
         CANVAS.canvas = document.createElement("canvas");
-        CANVAS.canvas.width = CANVAS.W = width;
-        CANVAS.canvas.height = CANVAS.H = height;
+        CANVAS.context = CANVAS.canvas.getContext("2d");
+        CANVAS.canvas.width = width;
+        CANVAS.canvas.height = height;
         document.body.appendChild(CANVAS.canvas);
+    },
+    update: (width, height) => {
+        CANVAS.canvas.width = width;
+        CANVAS.canvas.height = height;
     }
 }
 
+const BG_C = "rgba(255,243,145, 1.0)";
+
 window.addEventListener("load", () => {
-    const SW = window.innerWidth, SH = window.innerHeight;
-    CANVAS.setCanvas(SW, SH);
+    CANVAS.set(innerWidth, innerHeight);
+
+    let draw = () => {
+        let c = CANVAS.context;
+        c.fillStyle = BG_C;
+        c.fillRect(0, 0, innerWidth, innerHeight);
+
+        c.fillStyle = "brown";
+        c.fillRect(50, 50, 100, 100);
+    };
+
+    const update = function(time = 0) {
+        CANVAS.update(innerWidth, innerHeight);
+        draw();
+        requestAnimationFrame(update);
+    }
+
+    update();
 });
