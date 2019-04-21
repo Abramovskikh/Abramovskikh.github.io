@@ -8,14 +8,15 @@ const CANVAS = {
         CANVAS.canvas.height = height;
         document.body.appendChild(CANVAS.canvas);
     },
-    update: (width, height) => {
+    updateSize: (width, height) => {
         CANVAS.canvas.width = width;
         CANVAS.canvas.height = height;
     }
 }
 
 const TOOLS = {
-    locationTouch: { x: -1, y: -1 },
+    isTouched: false,
+    locationTouch: { x: null, y: null },
     setTouchPosition: (x, y) => {
         TOOLS.locationTouch.x = x;
         TOOLS.locationTouch.y = y;
@@ -23,6 +24,10 @@ const TOOLS = {
 }
 
 const BG_C = "rgba(255,243,145, 1.0)";
+
+window.addEventListener("resize", () => {
+    CANVAS.updateSize(innerWidth, innerHeight);
+});
 
 window.addEventListener("load", () => {
     CANVAS.set(innerWidth, innerHeight);
@@ -32,33 +37,24 @@ window.addEventListener("load", () => {
     
     let draw = () => {
         let c = CANVAS.context;
+        // Repaint canvas
         c.fillStyle = BG_C;
         c.fillRect(0, 0, innerWidth, innerHeight);
-        showPointer();
 
-        c.beginPath();
-        c.moveTo(0,0);
-        c.lineTo(TOOLS.locationTouch.x, TOOLS.locationTouch.y);
-        c.closePath()
-        c.stroke();
-
-        c.fillStyle = "black";
-        c.font = "20px monospace";
-        c.textAlign = "left";
-        c.textBaseline = "top";
-        let mag = TOOLS.locationTouch.x < 0 || TOOLS.locationTouch.y < 0 ? "" : Magnitude(TOOLS.locationTouch.x, TOOLS.locationTouch.y).toFixed(1);
-        c.fillText(mag, TOOLS.locationTouch.x + 10, TOOLS.locationTouch.y + 10);
-
+        showPointer(TOOLS.isTouched);
     };
 
+    // Animation
     const update = function(time = 0) {
-        CANVAS.update(innerWidth, innerHeight);
-        draw();
         requestAnimationFrame(update);
+
+        draw();
     }
 
+    // Touch listeners
     function tStart(e) {
         e.preventDefault();
+        TOOLS.isTouched = true;
         tMove(e);
     }
     function tMove(e) {
@@ -67,23 +63,29 @@ window.addEventListener("load", () => {
     }
     function tEnd(e) {
         e.preventDefault();
-        TOOLS.setTouchPosition(-innerWidth, -innerHeight);
+        TOOLS.isTouched = false;
+        TOOLS.setTouchPosition(null, null);
     }
 
-    function showPointer(point) {
-        let c = CANVAS.context;
-        let x = TOOLS.locationTouch.x < 0 ? -innerWidth : TOOLS.locationTouch.x;
-        let y = TOOLS.locationTouch.y < 0 ? -innerHeight : TOOLS.locationTouch.y;
-        c.strokeStyle = "brown";
-        c.beginPath()
-        c.arc(x, y, 10, 0, Math.PI * 2, false);
-        c.closePath();
-        c.stroke();
-    }
+    // Functions 
+    function showPointer(stats = false) {
+        if (stats) {
+            CANVAS.context.save();
 
-    function Magnitude(x, y) {
-        return Math.sqrt(x * x + y * y);
-    };
+            CANVAS.context.shadowColor = "black";
+            CANVAS.context.shadowBlur = 2;
+            CANVAS.context.shadowOffsetX = 5;
+            CANVAS.context.shadowOffsetY = 5;
+
+            CANVAS.context.strokeStyle = "brown";
+            CANVAS.context.beginPath()
+            CANVAS.context.arc(TOOLS.locationTouch.x, TOOLS.locationTouch.y, 10, 0, Math.PI * 2, false);
+            CANVAS.context.closePath();
+            CANVAS.context.stroke();
+
+            CANVAS.context.restore();
+        }
+    }
 
     update();
 });
