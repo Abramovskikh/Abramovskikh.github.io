@@ -24,12 +24,46 @@ const TOOLS = {
     }
 }
 
-const BG_C = "rgba(255,243,145, 1.0)";
+const BG_C = "rgba(255, 243, 145, 1.0)";
+const BALL_C = "rgba(130, 43, 52, 1.0)";
 
+//========================================================================================
+
+function Ball(radius = 10, x, y) {
+    this.x = x ? x : innerWidth / 2 - radius / 2;
+    this.y = y ? y : innerHeight - radius;
+    this.r = radius;
+    this.speedX = this.speedY = 8;
+}
+Ball.prototype.draw = function() {
+    let c = CANVAS.context;
+    c.save();
+    c.beginPath();
+    c.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    c.fillStyle = BALL_C;
+    c.fill();
+    c.closePath();
+    c.restore();
+}
+Ball.prototype.move = function() {
+    if (this.x + this.r > innerWidth) this.speedX = -this.speedX;
+    if (this.x - this.r < 0) this.speedX = -this.speedX;
+    if (this.y + this.r > innerHeight) this.speedY = - this.speedY;
+    if (this.y - this.r < 0) this.speedY = - this.speedY;
+    this.x += this.speedX;
+    this.y += this.speedY;
+}
+const BALL = new Ball();
+
+//========================================================================================
+
+// Слушатель поворота экрана смартфона
 window.addEventListener("resize", () => {
+    // Растягивание холста под размер экрана
     CANVAS.updateSize(innerWidth, innerHeight);
 });
 
+// Полная загрузка документа сайта
 window.addEventListener("load", () => {
     CANVAS.set(innerWidth, innerHeight);
     CANVAS.canvas.addEventListener("touchstart", tStart, false);
@@ -42,8 +76,8 @@ window.addEventListener("load", () => {
         c.fillStyle = BG_C;
         c.fillRect(0, 0, innerWidth, innerHeight);
 
-        drawCircle();
-        iteractivBox( TOOLS.isTouching ? .9 : 1 );
+        BALL.draw();
+        BALL.move();
 
         // Always bottom
         showPointer(TOOLS.isTouching);
@@ -90,39 +124,6 @@ window.addEventListener("load", () => {
             CANVAS.context.stroke();
 
             CANVAS.context.restore();
-        }
-    }
-
-    function iteractivBox(scale = 1) {
-        const c = CANVAS.context;
-        let w = 100;
-        c.save();
-        c.translate((innerWidth / 2) - w * scale / 2, (innerHeight / 2) - w * scale / 2);
-        c.scale(scale, scale);
-        c.fillStyle = "rgba(30,121,117, 1)";
-        c.fillRect(0,0,w,w);
-        c.restore();
-    }
-
-    function randomCircle() {
-        const c = CANVAS.context;
-        let w = 10;
-        c.save();
-
-        c.beginPath()
-        c.arc(  Math.random() * innerWidth - w,
-                Math.random() * innerHeight - w,
-                Math.random() * 10 + w,
-                0, Math.PI * 2, false );
-        c.lineWidth = 2;
-        c.strokeStyle = "darkblue";
-        c.stroke();
-        c.restore();
-    }
-    
-    function drawCircle() {
-        for(let i = 0; i < 40; i++) {
-            randomCircle();
         }
     }
     update();
